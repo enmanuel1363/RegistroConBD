@@ -4,6 +4,14 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 
+import {collection, 
+    getFirestore,
+    query, doc,
+    setDoc, getDocs} from 'firebase/firestore';
+import appFirebase from '../Firease';
+
+    const db = getFirestore(appFirebase);
+
 
 export default function Lista() {
 
@@ -31,8 +39,8 @@ export default function Lista() {
         );
     }
 
-    const guardarNuevo = (nuevo) =>{
-        setClientes([nuevo, ...clientes])
+    const guardarNuevo = async(nuevo) =>{
+      await setDoc(doc(db, 'clientes', nuevo.Ncedula), nuevo);
     }
     
     const [clientes, setClientes] = useState([
