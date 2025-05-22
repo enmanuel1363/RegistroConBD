@@ -2,21 +2,23 @@ import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+
 
 import {collection, 
     getFirestore,
     query, doc,
-    setDoc, getDocs} from 'firebase/firestore';
-import appFirebase from '../Firease';
+    setDoc, getDocs, deleteDoc} from 'firebase/firestore';
+import appFirebase from '../Firease'; // importando la configuracion de firebase
 
-    const db = getFirestore(appFirebase);
+    const db = getFirestore(appFirebase); // inicializando la base de datos
 
 
 export default function Lista() {
 
     const navigation = useNavigation();
-    const eliminar = (index) => {
+    const eliminar = (cedula) => {
         Alert.alert(
             'Confirmar aliminacion',
             'Estas seguro de que deseas elimanar este cliente?',
@@ -28,10 +30,9 @@ export default function Lista() {
                 {
                     text: 'Eliminar',
                     style: 'destructive',
-                    onPress: () => {
-                        const nuevaLista = [ ...clientes];
-                        nuevaLista.splice(index,1);
-                        setClientes(nuevaLista);
+                    onPress: async () => {
+                        await deleteDoc(doc(db, 'clientes', cedula))
+                        
                     }
                 },
             ],
@@ -39,34 +40,28 @@ export default function Lista() {
         );
     }
 
-    const guardarNuevo = async(nuevo) =>{
-      await setDoc(doc(db, 'clientes', nuevo.Ncedula), nuevo);
+    const guardarNuevo = async(nuevo) =>{ // funcion para guardar el nuevo cliente
+      await setDoc(doc(db, 'clientes', nuevo.Ncedula), nuevo); // guardando el nuevo cliente en la base de datos
     }
     
     const [clientes, setClientes] = useState([
-
-
-        {
-            Ncedula: '121-130603-1001T',
-            Nnombres: 'Enamnuelk',
-            Napellidos: 'Zamora',
-            Nfechanac: '1999',
-            Nsexo: 'Masculino'
-
-        },
-
-           {
-            Ncedula: '365-101099-1010K',
-            Nnombres: 'Jorge',
-            Napellidos: 'Montenegro',
-            Nfechanac: '1999',
-            Nsexo: 'Masculino'
-
-        }
-
-
     ]);
 
+useEffect(() => {
+    LeerDatos();
+}), [];
+
+const LeerDatos = async () => {
+    const q = query(collection(db, "clientes"));
+    const querySnapshot = await getDocs(q);
+    const d = [];
+    querySnapshot.forEach((doc) => {
+        const datosBD= doc.data();
+        d.push(datosBD);
+        
+    });
+    setClientes(d);
+}
 
 
 
@@ -90,7 +85,7 @@ export default function Lista() {
                             <Text style={styles.label}> Cedula: <Text style={styles.valor}> {clientes.Ncedula} </Text> </Text>
 
 
-                                <TouchableOpacity style={styles.botone} onPress={eliminar} >
+                                <TouchableOpacity style={styles.botone} onPress={() => eliminar (clientes.Ncedula)} >
 
                                     <FontAwesome5 name="trash" size={24} color="blue" />
                                 </TouchableOpacity>
