@@ -89,6 +89,9 @@ const LeerDatos = async () => {
 
                                     <FontAwesome5 name="trash" size={24} color="blue" />
                                 </TouchableOpacity>
+                              <TouchableOpacity style={styles.botonedit} onPress={()=> navigation.navigate('Formulario',{guardarNuevo, clienteEditar: clientes})}>
+                                <FontAwesome5 name="user-edit" size={24} color="blue" />
+                              </TouchableOpacity>
 
 
 
@@ -173,5 +176,12 @@ const styles = StyleSheet.create({
         right: 10,
         width: 32,
         height: 32,
-    }
+    },
+    botonedit: {
+       position:'absolute',
+       top: 10,
+       right: 50,
+        width: 32,
+        height: 32,
+    },
 });
