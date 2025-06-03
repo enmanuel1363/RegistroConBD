@@ -1,5 +1,5 @@
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
@@ -49,7 +49,7 @@ export default function Lista() {
 
 useEffect(() => {
     LeerDatos();
-}), [];
+}, []);
 
 const LeerDatos = async () => {
     const q = query(collection(db, "clientes"));
@@ -63,16 +63,63 @@ const LeerDatos = async () => {
     setClientes(d);
 }
 
+const buscarCliente = async (valorB) => {
+    if (!valorB || valorB.trim() === '') 
+        return;
 
+    const q = query(collection(db, "clientes"));
+    const querySnapshot = await getDocs(q);
+    const resultados = [];
+
+    const textoB = valorB.toLowerCase();
+
+    querySnapshot.forEach((doc) => {
+        const encontrado = doc.data();
+
+        if (
+            encontrado.Ncedula.toLowerCase().includes(textoB) ||
+            encontrado.Nnombres.toLowerCase().includes(textoB) ||
+            encontrado.Napellidos.toLowerCase().includes(textoB) ||
+            encontrado.Nfechanac.toLowerCase().includes(textoB) ||
+            encontrado.Nsexo.toLowerCase().includes(textoB)
+        ){
+            resultados.push(encontrado);
+        }
+    });
+    setClientes(resultados);
+}
+
+const [valorB, setValorB] = useState('');
 
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.boton} onPress={() => navigation.navigate('Formulario', {guardarNuevo})} >
-
                 <FontAwesome5 name="user-plus" size={24} color="blue" />
             </TouchableOpacity>
-            <Text style={styles.titulo}> Lista de clientes </Text>
 
+
+            <Text style={styles.titulo}> Lista de clientes </Text>
+            <View style={styles.BusquedaC}>
+                <Text styles={styles.label}> Filtro </Text>
+                <TextInput
+                    style={styles.input}
+                    value={valorB}
+                    onChangeText={async (text) => {
+                        setValorB(text);
+                        if (text.trim() !== ''){
+                            await buscarCliente(text);
+                        }else {
+                            LeerDatos();
+                        }
+
+                    }}
+                    placeholder=''
+                  
+                ></TextInput>
+            </View>
+
+            
+        
             {clientes.length == 0 ? (
                 <Text style={styles.mensaje}> No hay clientes</Text>
 
@@ -184,4 +231,19 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
     },
+
+    BusquedaC:{
+      marginBottom: 20,
+   
+    },
+     input: {
+        borderWidth: 1,
+        borderColor: 'black',
+        padding: 8,
+        marginTop: 5,
+        borderRadius: 5,
+        width: 350,
+        height: 50
+    },
+    
 });
